@@ -1,9 +1,8 @@
 #include <iostream>
 #include <vector>
-#include <unordered_map>
-#include <map>
-#include <array>
 #include <utility>
+#include <limits>
+#include <algorithm>
 #include <ctime>
 
 const int W = 7;
@@ -278,56 +277,6 @@ using D2_WB = Dia2Pattern<WHITE, BLACK>;
 using D2_BW = Dia2Pattern<BLACK, WHITE>;
 
 
-//=========================
-
-template <int COLOR>
-bool horizon4(const Table& t, const int x, const int y) {
-    if (t(x + 0, y) == COLOR &&
-        t(x + 1, y) == COLOR &&
-        t(x + 2, y) == COLOR &&
-        t(x + 3, y) == COLOR)
-    {
-        return true;
-    }
-    return false;
-}
-
-template <int COLOR>
-bool vertical4(const Table& t, const int x, const int y) {
-    if (t(x, y + 0) == COLOR &&
-        t(x, y + 1) == COLOR &&
-        t(x, y + 2) == COLOR &&
-        t(x, y + 3) == COLOR)
-    {
-        return true;
-    }
-    return false;
-}
-
-template <int COLOR>
-bool left_bottom4(const Table& t, const int x, const int y) {
-    if (t(x + 0, y + 0) == COLOR &&
-        t(x + 1, y + 1) == COLOR &&
-        t(x + 2, y + 2) == COLOR &&
-        t(x + 3, y + 3) == COLOR)
-    {
-        return true;
-    }
-    return false;
-}
-
-template <int COLOR>
-bool left_top4(const Table& t, const int x, const int y) {
-    if (t(x + 0, y - 0) == COLOR &&
-        t(x + 1, y - 1) == COLOR &&
-        t(x + 2, y - 2) == COLOR &&
-        t(x + 3, y - 3) == COLOR)
-    {
-        return true;
-    }
-    return false;
-}
-
 const int S_4C = 1000000;
 const int S_3N =  10000;
 const int S_3B =   2000;
@@ -471,7 +420,7 @@ int main()
 
     Table t;
     srand((unsigned)std::time(NULL));
-    if (rand() % 2 == 1);
+    if (rand() % 2 == 1)
         t.put(3, WHITE);
 
     t.print();
