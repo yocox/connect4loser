@@ -8,6 +8,10 @@
 const int W = 7;
 const int H = 6;
 
+////////////////////////////////////////////////////////////////////////
+// ½L­±
+////////////////////////////////////////////////////////////////////////
+
 enum Color { NONE = 0, WHITE = 1, BLACK = 2 };
 
 struct Table
@@ -70,6 +74,10 @@ struct Table
 
 };
 
+/////////////////////////////////////////////////////////////////////////////
+// Compile Time Unroll Pattern Matcher
+/////////////////////////////////////////////////////////////////////////////
+
 template <int XI, int YI, int D, Color ... COLORS>
 struct Pattern;
 
@@ -104,178 +112,77 @@ template <Color ... Colors> using Dia2Pattern = SymPattern<1,-1, 0, Colors...>;
 // horizontal
 /////////////////////////////////////////////////////////////////////////////
 
-// 100000
 using H_WWWW = HoriPattern<WHITE, WHITE, WHITE, WHITE>;
 using H_BBBB = HoriPattern<BLACK, BLACK, BLACK, BLACK>;
-
-// 10000
 using H_NWWW = HoriPattern< NONE, WHITE, WHITE, WHITE>;
 using H_NBBB = HoriPattern< NONE, BLACK, BLACK, BLACK>;
-using H_WWWN = HoriPattern<WHITE, WHITE, WHITE, NONE>;
-using H_BBBN = HoriPattern<BLACK, BLACK, BLACK, NONE>;
-
-// 2000
 using H_BWWW = HoriPattern<BLACK, WHITE, WHITE, WHITE>;
 using H_WBBB = HoriPattern<WHITE, BLACK, BLACK, BLACK>;
-using H_WWWB = HoriPattern<WHITE, WHITE, WHITE, BLACK>;
-using H_BBBW = HoriPattern<BLACK, BLACK, BLACK, WHITE>;
-
-// 1000
 using H_NWW = HoriPattern< NONE, WHITE, WHITE>;
 using H_NBB = HoriPattern< NONE, BLACK, BLACK>;
-using H_WWN = HoriPattern<WHITE, WHITE, NONE>;
-using H_BBN = HoriPattern<BLACK, BLACK, NONE>;
-
-// 200
 using H_BWW = HoriPattern<BLACK, WHITE, WHITE>;
 using H_WBB = HoriPattern<WHITE, BLACK, BLACK>;
-using H_WWB = HoriPattern<WHITE, WHITE, BLACK>;
-using H_BBW = HoriPattern<BLACK, BLACK, WHITE>;
-
-// 100
 using H_NW = HoriPattern< NONE, WHITE>;
 using H_NB = HoriPattern< NONE, BLACK>;
-using H_WN = HoriPattern<WHITE, NONE>;
-using H_BN = HoriPattern<BLACK, NONE>;
-
-// 20
-using H_BW = HoriPattern<BLACK, WHITE>;
-using H_WB = HoriPattern<WHITE, BLACK>;
-using H_WB = HoriPattern<WHITE, BLACK>;
 using H_BW = HoriPattern<BLACK, WHITE>;
 
 /////////////////////////////////////////////////////////////////////////////
 // vertical
 /////////////////////////////////////////////////////////////////////////////
 
-// 100000
 using V_WWWW = VertPattern<WHITE, WHITE, WHITE, WHITE>;
 using V_BBBB = VertPattern<BLACK, BLACK, BLACK, BLACK>;
-
-// 10000
 using V_NWWW = VertPattern< NONE, WHITE, WHITE, WHITE>;
 using V_NBBB = VertPattern< NONE, BLACK, BLACK, BLACK>;
-using V_WWWN = VertPattern<WHITE, WHITE, WHITE, NONE>;
-using V_BBBN = VertPattern<BLACK, BLACK, BLACK, NONE>;
-
-// 2000
 using V_BWWW = VertPattern<BLACK, WHITE, WHITE, WHITE>;
 using V_WBBB = VertPattern<WHITE, BLACK, BLACK, BLACK>;
-using V_WWWB = VertPattern<WHITE, WHITE, WHITE, BLACK>;
-using V_BBBW = VertPattern<BLACK, BLACK, BLACK, WHITE>;
-
-// 1000
 using V_NWW = VertPattern< NONE, WHITE, WHITE>;
 using V_NBB = VertPattern< NONE, BLACK, BLACK>;
-using V_WWN = VertPattern<WHITE, WHITE, NONE>;
-using V_BBN = VertPattern<BLACK, BLACK, NONE>;
-
-// 200
 using V_BWW = VertPattern<BLACK, WHITE, WHITE>;
 using V_WBB = VertPattern<WHITE, BLACK, BLACK>;
-using V_WWB = VertPattern<WHITE, WHITE, BLACK>;
-using V_BBW = VertPattern<BLACK, BLACK, WHITE>;
-
-// 100
 using V_NW = VertPattern< NONE, WHITE>;
 using V_NB = VertPattern< NONE, BLACK>;
-using V_WN = VertPattern<WHITE, NONE>;
-using V_BN = VertPattern<BLACK, NONE>;
-
-// 20
-using V_BW = VertPattern<BLACK, WHITE>;
-using V_WB = VertPattern<WHITE, BLACK>;
-using V_WB = VertPattern<WHITE, BLACK>;
 using V_BW = VertPattern<BLACK, WHITE>;
 
 /////////////////////////////////////////////////////////////////////////////
 // Dia1
 /////////////////////////////////////////////////////////////////////////////
 
-// 100000
 using D1_WWWW = Dia1Pattern<WHITE, WHITE, WHITE, WHITE>;
 using D1_BBBB = Dia1Pattern<BLACK, BLACK, BLACK, BLACK>;
-
-// 10000
 using D1_NWWW = Dia1Pattern< NONE, WHITE, WHITE, WHITE>;
 using D1_NBBB = Dia1Pattern< NONE, BLACK, BLACK, BLACK>;
-using D1_WWWN = Dia1Pattern<WHITE, WHITE, WHITE, NONE>;
-using D1_BBBN = Dia1Pattern<BLACK, BLACK, BLACK, NONE>;
-
-// 2000
 using D1_BWWW = Dia1Pattern<BLACK, WHITE, WHITE, WHITE>;
 using D1_WBBB = Dia1Pattern<WHITE, BLACK, BLACK, BLACK>;
-using D1_WWWB = Dia1Pattern<WHITE, WHITE, WHITE, BLACK>;
-using D1_BBBW = Dia1Pattern<BLACK, BLACK, BLACK, WHITE>;
-
-// 1000
 using D1_NWW = Dia1Pattern< NONE, WHITE, WHITE>;
 using D1_NBB = Dia1Pattern< NONE, BLACK, BLACK>;
-using D1_WWN = Dia1Pattern<WHITE, WHITE, NONE>;
-using D1_BBN = Dia1Pattern<BLACK, BLACK, NONE>;
-
-// 200
 using D1_BWW = Dia1Pattern<BLACK, WHITE, WHITE>;
 using D1_WBB = Dia1Pattern<WHITE, BLACK, BLACK>;
-using D1_WWB = Dia1Pattern<WHITE, WHITE, BLACK>;
-using D1_BBW = Dia1Pattern<BLACK, BLACK, WHITE>;
-
-// 100
 using D1_NW = Dia1Pattern< NONE, WHITE>;
 using D1_NB = Dia1Pattern< NONE, BLACK>;
-using D1_WN = Dia1Pattern<WHITE, NONE>;
-using D1_BN = Dia1Pattern<BLACK, NONE>;
-
-// 20
-using D1_BW = Dia1Pattern<BLACK, WHITE>;
-using D1_WB = Dia1Pattern<WHITE, BLACK>;
-using D1_WB = Dia1Pattern<WHITE, BLACK>;
 using D1_BW = Dia1Pattern<BLACK, WHITE>;
 
 /////////////////////////////////////////////////////////////////////////////
 // Dai2
 /////////////////////////////////////////////////////////////////////////////
 
-// 100000
 using D2_WWWW = Dia2Pattern<WHITE, WHITE, WHITE, WHITE>;
 using D2_BBBB = Dia2Pattern<BLACK, BLACK, BLACK, BLACK>;
-
-// 10000
 using D2_NWWW = Dia2Pattern< NONE, WHITE, WHITE, WHITE>;
 using D2_NBBB = Dia2Pattern< NONE, BLACK, BLACK, BLACK>;
-using D2_WWWN = Dia2Pattern<WHITE, WHITE, WHITE, NONE>;
-using D2_BBBN = Dia2Pattern<BLACK, BLACK, BLACK, NONE>;
-
-// 2000
 using D2_BWWW = Dia2Pattern<BLACK, WHITE, WHITE, WHITE>;
 using D2_WBBB = Dia2Pattern<WHITE, BLACK, BLACK, BLACK>;
-using D2_WWWB = Dia2Pattern<WHITE, WHITE, WHITE, BLACK>;
-using D2_BBBW = Dia2Pattern<BLACK, BLACK, BLACK, WHITE>;
-
-// 1000
 using D2_NWW = Dia2Pattern< NONE, WHITE, WHITE>;
 using D2_NBB = Dia2Pattern< NONE, BLACK, BLACK>;
-using D2_WWN = Dia2Pattern<WHITE, WHITE, NONE>;
-using D2_BBN = Dia2Pattern<BLACK, BLACK, NONE>;
-
-// 200
 using D2_BWW = Dia2Pattern<BLACK, WHITE, WHITE>;
 using D2_WBB = Dia2Pattern<WHITE, BLACK, BLACK>;
-using D2_WWB = Dia2Pattern<WHITE, WHITE, BLACK>;
-using D2_BBW = Dia2Pattern<BLACK, BLACK, WHITE>;
-
-// 100
 using D2_NW = Dia2Pattern< NONE, WHITE>;
 using D2_NB = Dia2Pattern< NONE, BLACK>;
-using D2_WN = Dia2Pattern<WHITE, NONE>;
-using D2_BN = Dia2Pattern<BLACK, NONE>;
-
-// 20
-using D2_BW = Dia2Pattern<BLACK, WHITE>;
-using D2_WB = Dia2Pattern<WHITE, BLACK>;
-using D2_WB = Dia2Pattern<WHITE, BLACK>;
 using D2_BW = Dia2Pattern<BLACK, WHITE>;
 
+/////////////////////////////////////////////////////////////////////////
+// Score Weights
+/////////////////////////////////////////////////////////////////////////
 
 const int S_4C = 1000000;
 const int S_3N =  10000;
@@ -291,116 +198,86 @@ int eval(const Table& t)
     ///////////////////////////////////////////////////////////
     // win
     ///////////////////////////////////////////////////////////
+    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_BBBB::check(t, x, y)) { return -S_4C; } if ( H_WWWW::check(t, x, y)) { return  S_4C; } } }
     for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BBBB::check(t, x, y)) { return -S_4C; } if ( V_WWWW::check(t, x, y)) { return  S_4C; } } }
     for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W - 3; ++x) { if (D1_BBBB::check(t, x, y)) { return -S_4C; } if (D1_WWWW::check(t, x, y)) { return  S_4C; } } }
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_BBBB::check(t, x, y)) { return -S_4C; } if ( H_WWWW::check(t, x, y)) { return  S_4C; } } }
     for (int y = 3; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if (D2_BBBB::check(t, x, y)) { return -S_4C; } if (D2_WWWW::check(t, x, y)) { return  S_4C; } } }
 
     // WWWN
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_BBBN::check(t, x, y)) { score -= S_3N; } if ( H_WWWN::check(t, x, y)) { score += S_3N; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BBBN::check(t, x, y)) { score -= S_3N; } if ( V_WWWN::check(t, x, y)) { score += S_3N; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W - 3; ++x) { if (D1_BBBN::check(t, x, y)) { score -= S_3N; } if (D1_WWWN::check(t, x, y)) { score += S_3N; } } }
-    for (int y = 3; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if (D2_BBBN::check(t, x, y)) { score -= S_3N; } if (D2_WWWN::check(t, x, y)) { score += S_3N; } } }
+    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_NBBB::check(t, x, y)) { score -= S_3N; } if ( H_NWWW::check(t, x, y)) { score += S_3N; } } }
+    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_NBBB::check(t, x, y)) { score -= S_3N; } if ( V_NWWW::check(t, x, y)) { score += S_3N; } } }
+    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W - 3; ++x) { if (D1_NBBB::check(t, x, y)) { score -= S_3N; } if (D1_NWWW::check(t, x, y)) { score += S_3N; } } }
+    for (int y = 3; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if (D2_NBBB::check(t, x, y)) { score -= S_3N; } if (D2_NWWW::check(t, x, y)) { score += S_3N; } } }
 
     // WWWB
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_BBBW::check(t, x, y)) { score -= S_3B; } if ( H_WWWB::check(t, x, y)) { score += S_3B; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BBBW::check(t, x, y)) { score -= S_3B; } if ( V_WWWB::check(t, x, y)) { score += S_3B; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W - 3; ++x) { if (D1_BBBW::check(t, x, y)) { score -= S_3B; } if (D1_WWWB::check(t, x, y)) { score += S_3B; } } }
-    for (int y = 3; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if (D2_BBBW::check(t, x, y)) { score -= S_3B; } if (D2_WWWB::check(t, x, y)) { score += S_3B; } } }
+    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_WBBB::check(t, x, y)) { score -= S_3B; } if ( H_BWWW::check(t, x, y)) { score += S_3B; } } }
+    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_WBBB::check(t, x, y)) { score -= S_3B; } if ( V_BWWW::check(t, x, y)) { score += S_3B; } } }
+    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W - 3; ++x) { if (D1_WBBB::check(t, x, y)) { score -= S_3B; } if (D1_BWWW::check(t, x, y)) { score += S_3B; } } }
+    for (int y = 3; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if (D2_WBBB::check(t, x, y)) { score -= S_3B; } if (D2_BWWW::check(t, x, y)) { score += S_3B; } } }
 
     // WWN
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if ( H_BBN::check(t, x, y)) { score -= S_2N; } if ( H_WWN::check(t, x, y)) { score += S_2N; } } }
-    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BBN::check(t, x, y)) { score -= S_2N; } if ( V_WWN::check(t, x, y)) { score += S_2N; } } }
-    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W - 2; ++x) { if (D1_BBN::check(t, x, y)) { score -= S_2N; } if (D1_WWN::check(t, x, y)) { score += S_2N; } } }
-    for (int y = 2; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if (D2_BBN::check(t, x, y)) { score -= S_2N; } if (D2_WWN::check(t, x, y)) { score += S_2N; } } }
+    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if ( H_NBB::check(t, x, y)) { score -= S_2N; } if ( H_NWW::check(t, x, y)) { score += S_2N; } } }
+    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_NBB::check(t, x, y)) { score -= S_2N; } if ( V_NWW::check(t, x, y)) { score += S_2N; } } }
+    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W - 2; ++x) { if (D1_NBB::check(t, x, y)) { score -= S_2N; } if (D1_NWW::check(t, x, y)) { score += S_2N; } } }
+    for (int y = 2; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if (D2_NBB::check(t, x, y)) { score -= S_2N; } if (D2_NWW::check(t, x, y)) { score += S_2N; } } }
 
     // WWB
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if ( H_BBW::check(t, x, y)) { score -= S_2B; } if ( H_WWB::check(t, x, y)) { score += S_2B; } } }
-    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BBW::check(t, x, y)) { score -= S_2B; } if ( V_WWB::check(t, x, y)) { score += S_2B; } } }
-    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W - 2; ++x) { if (D1_BBW::check(t, x, y)) { score -= S_2B; } if (D1_WWB::check(t, x, y)) { score += S_2B; } } }
-    for (int y = 2; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if (D2_BBW::check(t, x, y)) { score -= S_2B; } if (D2_WWB::check(t, x, y)) { score += S_2B; } } }
+    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if ( H_WBB::check(t, x, y)) { score -= S_2B; } if ( H_BWW::check(t, x, y)) { score += S_2B; } } }
+    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_WBB::check(t, x, y)) { score -= S_2B; } if ( V_BWW::check(t, x, y)) { score += S_2B; } } }
+    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W - 2; ++x) { if (D1_WBB::check(t, x, y)) { score -= S_2B; } if (D1_BWW::check(t, x, y)) { score += S_2B; } } }
+    for (int y = 2; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if (D2_WBB::check(t, x, y)) { score -= S_2B; } if (D2_BWW::check(t, x, y)) { score += S_2B; } } }
 
     // WN
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if ( H_BN::check(t, x, y)) { score -= S_1N; } if ( H_WN::check(t, x, y)) { score += S_1N; } } }
-    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BN::check(t, x, y)) { score -= S_1N; } if ( V_WN::check(t, x, y)) { score += S_1N; } } }
-    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W - 1; ++x) { if (D1_BN::check(t, x, y)) { score -= S_1N; } if (D1_WN::check(t, x, y)) { score += S_1N; } } }
-    for (int y = 1; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if (D2_BN::check(t, x, y)) { score -= S_1N; } if (D2_WN::check(t, x, y)) { score += S_1N; } } }
+    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if ( H_NB::check(t, x, y)) { score -= S_1N; } if ( H_NW::check(t, x, y)) { score += S_1N; } } }
+    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_NB::check(t, x, y)) { score -= S_1N; } if ( V_NW::check(t, x, y)) { score += S_1N; } } }
+    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W - 1; ++x) { if (D1_NB::check(t, x, y)) { score -= S_1N; } if (D1_NW::check(t, x, y)) { score += S_1N; } } }
+    for (int y = 1; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if (D2_NB::check(t, x, y)) { score -= S_1N; } if (D2_NW::check(t, x, y)) { score += S_1N; } } }
 
     // WB
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if ( H_BW::check(t, x, y)) { score -= S_1B; } if ( H_WB::check(t, x, y)) { score += S_1B; } } }
-    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BW::check(t, x, y)) { score -= S_1B; } if ( V_WB::check(t, x, y)) { score += S_1B; } } }
-    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W - 1; ++x) { if (D1_BW::check(t, x, y)) { score -= S_1B; } if (D1_WB::check(t, x, y)) { score += S_1B; } } }
-    for (int y = 1; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if (D2_BW::check(t, x, y)) { score -= S_1B; } if (D2_WB::check(t, x, y)) { score += S_1B; } } }
+    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if ( H_BW::check(t, x, y)) { score -= S_1B; } if ( H_BW::check(t, x, y)) { score += S_1B; } } }
+    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BW::check(t, x, y)) { score -= S_1B; } if ( V_BW::check(t, x, y)) { score += S_1B; } } }
+    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W - 1; ++x) { if (D1_BW::check(t, x, y)) { score -= S_1B; } if (D1_BW::check(t, x, y)) { score += S_1B; } } }
+    for (int y = 1; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if (D2_BW::check(t, x, y)) { score -= S_1B; } if (D2_BW::check(t, x, y)) { score += S_1B; } } }
 
     return score;
 }
-
-struct Trace {
-    int x;
-    int score;
-    int future;
-};
 
 std::pair<int, int> minmax(Table& t, const int deep)
 {
     bool want_max = deep % 2 == 1;
 
-    if (want_max) {
-        for (int x = 0; x < 6; ++x) {
-            if (t.putable(x)) {
-                t.put(x, WHITE);
-                const int s = eval(t);
-                t.pop();
-                if (s == S_4C) {
-                    return { x, S_4C };
-                }
-            }
-        }
-    }
-    else {
-        for (int x = 0; x < 6; ++x) {
-            if (t.putable(x)) {
-                t.put(x, BLACK);
-                const int s = eval(t);
-                t.pop();
-                if (s == -S_4C) {
-                    return{ x, -S_4C };
-                }
-            }
-        }
-    }
-
     int s[6];
     for (int i = 0; i < 6; ++i)
     {
-        if (t.putable(i))
-        {
-            t.put(i, want_max ? WHITE : BLACK);
-            if (deep == 1) {
-                s[i] = eval(t);
-            }
-            else {
-                auto tr = minmax(t, deep - 1);
-                s[i] = tr.second;
-            }
-            t.pop();
+        if (!t.putable(i)) {
+            s[i] = want_max ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
+            continue;
         }
-        else
-        {
-            if (want_max)
-                s[i] = std::numeric_limits<int>::min();
-            else
-                s[i] = std::numeric_limits<int>::max();
+
+        t.put(i, want_max ? WHITE : BLACK);
+        int score = eval(t);
+        if (want_max) {
+            if (score == S_4C) { t.pop();  return{ i, S_4C }; }
+        } else {
+            if (score == -S_4C) { t.pop();  return{ i, -S_4C }; }
         }
+
+        if (deep == 1) {
+            s[i] = score;
+        } else {
+            auto tr = minmax(t, deep - 1);
+            s[i] = tr.second;
+        }
+        t.pop();
     }
 
     if (want_max) {
         auto max_i = std::max_element(std::begin(s), std::end(s));
-        return{ max_i - std::begin(s), *max_i };
+        return { max_i - std::begin(s), *max_i };
     }
     else {
         auto min_i = std::min_element(std::begin(s), std::end(s));
-        return{ min_i - std::begin(s), *min_i };
+        return { min_i - std::begin(s), *min_i };
     }
 }
 
