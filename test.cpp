@@ -246,8 +246,8 @@ std::pair<int, int> minmax(Table& t, const int deep)
 {
     bool want_max = deep % 2 == 1;
 
-    int s[6];
-    for (int i = 0; i < 6; ++i)
+    int s[W];
+    for (int i = 0; i < W; ++i)
     {
         if (!t.putable(i)) {
             s[i] = want_max ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
