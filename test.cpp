@@ -4,6 +4,8 @@
 #include <limits>
 #include <algorithm>
 #include <ctime>
+#include <chrono>
+#include <cassert>
 
 const int W = 7;
 const int H = 6;
@@ -38,6 +40,8 @@ struct Table
                 return;
             }
         }
+        assert(0 && "can not put in this column!");
+        std::cerr << "can not put in this column!" << std::endl;
     }
 
     void pop() {
@@ -49,6 +53,7 @@ struct Table
     void print() const
     {
         for (int y = H - 1; y >= 0; --y) {
+            std::cout << H - y << "|";
             for (int x = 0; x < W; ++x) {
                 if (v[x][y] == WHITE) {
                     std::cout << "x";
@@ -60,11 +65,12 @@ struct Table
                     std::cout << " ";
                 }
             }
-            std::cout << std::endl;
+            std::cout << "|" << std::endl;
         }
-        std::cout << "==========" << std::endl;
+        std::cout << " +-------+" << std::endl;
+        std::cout << "  ";
         for (int x = 0; x < W; ++x) {
-            std::cout << x;
+            std::cout << x + 1;
         }
         std::cout << std::endl;
     }
@@ -242,11 +248,10 @@ int eval(const Table& t)
     return score;
 }
 
-std::pair<int, int> minmax(Table& t, const int deep)
+std::pair<int, int> minmax(Table& t, const int deep, const bool want_max, const int known_limit)
 {
-    bool want_max = deep % 2 == 1;
-
     int s[W];
+    int current_sub_tree_limit = want_max ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
     for (int i = 0; i < W; ++i)
     {
         if (!t.putable(i)) {
@@ -265,10 +270,26 @@ std::pair<int, int> minmax(Table& t, const int deep)
         if (deep == 1) {
             s[i] = score;
         } else {
-            auto tr = minmax(t, deep - 1);
+            auto tr = minmax(t, deep - 1, !want_max, current_sub_tree_limit);
             s[i] = tr.second;
         }
         t.pop();
+
+        // alpha-beta
+        if (want_max) {
+            current_sub_tree_limit = std::max(current_sub_tree_limit, s[i]);
+            if (current_sub_tree_limit > known_limit) {
+                //std::cout << "alpha-beta proning " << current_sub_tree_limit << " > " << known_limit << std::endl;
+                return { i, current_sub_tree_limit };
+            }
+        }
+        else {
+            current_sub_tree_limit = std::min(current_sub_tree_limit, s[i]);
+            if (current_sub_tree_limit < known_limit) {
+                //std::cout << "alpha-beta proning " << current_sub_tree_limit << " < " << known_limit << std::endl;
+                return { i, current_sub_tree_limit };
+            }
+        }
     }
 
     if (want_max) {
@@ -283,8 +304,17 @@ std::pair<int, int> minmax(Table& t, const int deep)
 
 int choose_a_move(Table& t, int level)
 {
-    std::cout << "thinking..." << std::endl;
-    auto i_score = minmax(t, level);
+    using std::chrono::high_resolution_clock;
+    using std::chrono::milliseconds;
+    using want_max = bool;
+
+    std::cout << "thinking... ";
+    auto start = high_resolution_clock::now();
+    auto i_score = minmax(t, level, want_max(true), std::numeric_limits<int>::max());
+    auto finish = high_resolution_clock::now();
+
+    milliseconds total_ms = std::chrono::duration_cast<milliseconds>(finish - start);
+    std::cout << total_ms.count() << " ms" << std::endl;
     return i_score.first;
 }
 
@@ -298,15 +328,16 @@ int main()
     Table t;
     srand((unsigned)std::time(NULL));
     if (rand() % 2 == 1)
-        t.put(3, WHITE);
+        //t.put(3, WHITE)
+        ;
 
     t.print();
-
     while (true) {
         // player
         std::cout << "choose : ";
         int i;
         std::cin >> i;
+        --i;
         if (i < 0 || i > 6)
             break;
 
@@ -320,7 +351,7 @@ int main()
 
         // cpu
         int m = choose_a_move(t, level);
-        std::cout << "CPU put " << m << std::endl;
+        std::cout << "CPU put " << m + 1 << std::endl;
         t.put(m, WHITE);
         t.print();
 
