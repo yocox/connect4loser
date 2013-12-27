@@ -129,15 +129,21 @@ struct String {
     using type = String<Colors ...>;
 };
 
-template <typename StringType, Color C>
+// Append<"WW", N, N> = "WWNN"
+template <typename StringType, Color ... Colors>
 struct Append;
 
-template <Color C, Color ... Colors>
-struct Append<String<Colors...>, C>
-{
-    using type = String<Colors..., C>;
+template <Color Head, Color ... StrColors, Color ... Tail>
+struct Append<String<StrColors...>, Head, Tail...> {
+    using type = typename Append<String<StrColors..., Head>, Tail...>::type;
 };
 
+template <Color ... StrColors>
+struct Append<String<StrColors...>> {
+    using type = String<StrColors...>;
+};
+
+// InvString<"WW"> = "BB"
 template <typename StringType>
 struct InvString;
 
@@ -146,6 +152,7 @@ struct InvString<String<Colors...>> {
     using type = String<InvColor<Colors>::color ...>;
 };
 
+// RevString<"WWWN"> = "NWWW"
 template <typename StringType>
 struct RevString;
 
@@ -158,6 +165,49 @@ template <Color Head>
 struct RevString<String<Head>> {
     using type = typename String<Head>::type;
 };
+
+// Concate<"WWW", "BBB"> = "WWWBBB"
+template <typename S1, typename S2>
+struct Concate;
+
+template <typename S1, Color ... S2Colors>
+struct Concate<S1, String<S2Colors...>> {
+    using type = typename Append<S1, S2Colors...>::type;
+};
+
+template <typename S1>
+struct Concate<S1, String<>> {
+    using type = S1;
+};
+
+// RepStr<W, 5> = "WWWWW"
+template <Color C, int N>
+struct RepStr {
+    using type = typename Append<typename RepStr<C, N - 1>::type, C>::type;
+};
+
+template <Color C>
+struct RepStr<C, 1> {
+    using type = String<C>;
+};
+
+// WN<4, 2> = "WWWWNN"
+template <int WHITE_LEN, int NONE_LEN>
+struct WN {
+    using type = typename Concate<
+                    typename RepStr<WHITE, WHITE_LEN>::type,
+                    typename RepStr<NONE, NONE_LEN>::type
+                 >::type;
+};
+
+/////////////////////////////////////////////////////////////////////////////
+// Meta Pattern
+/////////////////////////////////////////////////////////////////////////////
+
+using WWWW = String<WHITE, WHITE, WHITE, WHITE>;
+using WWWN = String<WHITE, WHITE, WHITE, NONE >;
+using WWNN = String<WHITE, WHITE, NONE , NONE >;
+using WNNN = String<WHITE, NONE , NONE , NONE >;
 
 /////////////////////////////////////////////////////////////////////////////
 // horizontal
@@ -372,6 +422,11 @@ int main()
     std::cout << typeid(BBW).name() << std::endl;
     using WBB = RevString<BBW>::type;
     std::cout << typeid(WBB).name() << std::endl;
+    using WBBBBW = Concate<WBB, BBW>::type;
+    std::cout << typeid(WBBBBW).name() << std::endl;
+
+    std::cout << typeid(WN<4, 3>::type).name() << std::endl;
+
 
 
     int level = 1;
