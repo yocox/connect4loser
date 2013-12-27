@@ -6,6 +6,7 @@
 #include <ctime>
 #include <chrono>
 #include <cassert>
+#include <typeinfo>
 
 const int W = 7;
 const int H = 6;
@@ -113,6 +114,50 @@ template <Color ... Colors> using HoriPattern = SymPattern<1, 0, 0, Colors...>;
 template <Color ... Colors> using VertPattern = SymPattern<0, 1, 0, Colors...>;
 template <Color ... Colors> using Dia1Pattern = SymPattern<1, 1, 0, Colors...>;
 template <Color ... Colors> using Dia2Pattern = SymPattern<1,-1, 0, Colors...>;
+
+
+/////////////////////////////////////////////////////////////////////////////
+// ColorString
+/////////////////////////////////////////////////////////////////////////////
+
+template <Color C> struct InvColor { const static Color color = NONE ; };
+template <> struct InvColor<WHITE> { const static Color color = BLACK; };
+template <> struct InvColor<BLACK> { const static Color color = WHITE; };
+
+template <Color ... Colors>
+struct String {
+    using type = String<Colors ...>;
+};
+
+template <typename StringType, Color C>
+struct Append;
+
+template <Color C, Color ... Colors>
+struct Append<String<Colors...>, C>
+{
+    using type = String<Colors..., C>;
+};
+
+template <typename StringType>
+struct InvString;
+
+template <Color ... Colors>
+struct InvString<String<Colors...>> {
+    using type = String<InvColor<Colors>::color ...>;
+};
+
+template <typename StringType>
+struct RevString;
+
+template <Color Head, Color ...Tail>
+struct RevString<String<Head, Tail...>> {
+    using type = typename Append<typename RevString<String<Tail...>>::type, Head>::type;
+};
+
+template <Color Head>
+struct RevString<String<Head>> {
+    using type = typename String<Head>::type;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // horizontal
@@ -320,6 +365,15 @@ int choose_a_move(Table& t, int level)
 
 int main()
 {
+    using WW = String<WHITE, WHITE, WHITE, WHITE>;
+    using WWB = Append<WW, BLACK>::type;
+    std::cout << typeid(WWB).name() << std::endl;
+    using BBW = InvString<WWB>::type;
+    std::cout << typeid(BBW).name() << std::endl;
+    using WBB = RevString<BBW>::type;
+    std::cout << typeid(WBB).name() << std::endl;
+
+
     int level = 1;
     std::cout << "level:[0~3] ";
     std::cin >> level;
