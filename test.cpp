@@ -251,7 +251,6 @@ struct MatchCounter {
     enum { Y0 = 0 };
     enum { X1 = 3 };
     enum { Y1 = 3 };
-    enum { N = 7 - 4 + 1 };
     static int count(const Table& t) {
         return MatchCounter_impl<MatcherType, X0, Y0, X0, Y0, X1, Y1>::count(t);
     }
@@ -265,9 +264,16 @@ struct MatchCounter_impl {
 };
 
 template <template<int, int> class MatcherType, int Y, int X0, int Y0, int X1, int Y1>
-struct MatchCounter_impl<MatcherType, X0, Y, X0, Y0, X1, Y1> {
+struct MatchCounter_impl<MatcherType, X1, Y, X0, Y0, X1, Y1> {
     static int count(const Table& t) {
-        return MatcherType<X0, Y>::check(t) + MatchCounter_impl<MatcherType, X0, Y + 1, X0, Y0, X1, Y1>::count(t);
+        return 0 + MatchCounter_impl<MatcherType, X0, Y + 1, X0, Y0, X1, Y1>::count(t);
+    }
+};
+
+template <template<int, int> class MatcherType, int X, int X0, int Y0, int X1, int Y1>
+struct MatchCounter_impl<MatcherType, X, Y1, X0, Y0, X1, Y1> {
+    static int count(const Table& t) {
+        return 0 + MatchCounter_impl<MatcherType, X + 1, Y1, X0, Y0, X1, Y1>::count(t);
     }
 };
 
@@ -488,8 +494,6 @@ using ma_hori = Matcher<X0, Y0, 1, 0, WHITE, WHITE, WHITE, WHITE>;
 
 int main()
 {
-    std::cout << sizeof(std::bitset<84>) << std::endl;
-
     Table t;
     using WW = String<WHITE, WHITE, WHITE, WHITE>;
     t.put(0, WHITE);
@@ -499,7 +503,6 @@ int main()
     using maty = ma_hori<0, 0>;
     bool ee = maty::check(t);
     int cnt = MatchCounter<ma_hori>::count(t);
-
 
     return 0;
 
