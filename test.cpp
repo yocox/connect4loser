@@ -7,6 +7,7 @@
 #include <chrono>
 #include <cassert>
 #include <typeinfo>
+#include <bitset>
 
 const int W = 7;
 const int H = 6;
@@ -204,10 +205,79 @@ struct WN {
 // Meta Pattern
 /////////////////////////////////////////////////////////////////////////////
 
-using WWWW = String<WHITE, WHITE, WHITE, WHITE>;
-using WWWN = String<WHITE, WHITE, WHITE, NONE >;
-using WWNN = String<WHITE, WHITE, NONE , NONE >;
-using WNNN = String<WHITE, NONE , NONE , NONE >;
+using WWWW = WN<4, 0>;
+using WWWN = WN<3, 1>;
+using WWNN = WN<2, 2>;
+using WNNN = WN<1, 3>;
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// matcher
+/////////////////////////////////////////////////////////////////////////////
+
+template <int X0, int Y0, int XI, int YI, Color ... COLORS>
+struct Matcher;
+
+template <int X0, int Y0, int XI, int YI, Color Head, Color ... Tail>
+struct Matcher<X0, Y0, XI, YI, Head, Tail...> {
+    enum { len = sizeof...(Tail) + 1 };
+    enum { X0 = X0 };
+    enum { Y0 = Y0 };
+    enum { XI = XI };
+    enum { YI = YI };
+    bool static check(const Table& t) {
+        return t(X0, Y0) == Head && Matcher<X0 + XI, Y0 + YI, XI, YI, Tail...>::check(t);
+    }
+};
+
+template <int X0, int Y0, int XI, int YI>
+struct Matcher<X0, Y0, XI, YI> {
+    enum { len = 0 };
+    enum { X0 = X0 };
+    enum { Y0 = Y0 };
+    enum { XI = XI };
+    enum { YI = YI };
+    bool static check(const Table& t) {
+        return true;
+    }
+    using string_type = String<>;
+};
+
+template <template<int,int> class MatcherType>
+struct MatchCounter {
+    enum { len_pat = MatcherType::len };
+    enum { X0 = 0 };
+    enum { Y0 = 0 };
+    enum { X1 = 3 };
+    enum { Y1 = 3 };
+    enum { N = 7 - 4 + 1 };
+    static int count(const Table& t) {
+        return MatchCounter_impl<MatcherType, X0, Y0, X0, Y0, X1, Y1>::count(t);
+    }
+};
+
+template <template<int, int> class MatcherType, int X, int Y, int X0, int Y0, int X1, int Y1>
+struct MatchCounter_impl {
+    static int count(const Table& t) {
+        return MatcherType<X, Y>::check(t) + MatchCounter_impl<MatcherType, X + 1, Y, X0, Y0, X1, Y1>::count(t);
+    }
+};
+
+template <template<int, int> class MatcherType, int Y, int X0, int Y0, int X1, int Y1>
+struct MatchCounter_impl<MatcherType, X0, Y, X0, Y0, X1, Y1> {
+    static int count(const Table& t) {
+        return MatcherType<X0, Y>::check(t) + MatchCounter_impl<MatcherType, X0, Y + 1, X0, Y0, X1, Y1>::count(t);
+    }
+};
+
+template <template<int, int> class MatcherType, int X0, int Y0, int X1, int Y1>
+struct MatchCounter_impl<MatcherType, X1, Y1, X0, Y0, X1, Y1> {
+    static int count(const Table& t) {
+        return 0;
+    }
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 // horizontal
@@ -413,19 +483,27 @@ int choose_a_move(Table& t, int level)
     return i_score.first;
 }
 
+template <int X0, int Y0>
+using ma_hori = Matcher<X0, Y0, 1, 0, WHITE, WHITE, WHITE, WHITE>;
+
 int main()
 {
-    using WW = String<WHITE, WHITE, WHITE, WHITE>;
-    using WWB = Append<WW, BLACK>::type;
-    std::cout << typeid(WWB).name() << std::endl;
-    using BBW = InvString<WWB>::type;
-    std::cout << typeid(BBW).name() << std::endl;
-    using WBB = RevString<BBW>::type;
-    std::cout << typeid(WBB).name() << std::endl;
-    using WBBBBW = Concate<WBB, BBW>::type;
-    std::cout << typeid(WBBBBW).name() << std::endl;
+    std::cout << sizeof(std::bitset<84>) << std::endl;
 
-    std::cout << typeid(WN<4, 3>::type).name() << std::endl;
+    Table t;
+    using WW = String<WHITE, WHITE, WHITE, WHITE>;
+    t.put(0, WHITE);
+    t.put(1, WHITE);
+    t.put(2, WHITE);
+    t.put(3, WHITE);
+    using maty = ma_hori<0, 0>;
+    bool ee = maty::check(t);
+    int cnt = MatchCounter<ma_hori>::count(t);
+
+
+    return 0;
+
+   
 
 
 
@@ -434,7 +512,6 @@ int main()
     std::cin >> level;
     level = level * 2 + 1;
 
-    Table t;
     srand((unsigned)std::time(NULL));
     if (rand() % 2 == 1)
         //t.put(3, WHITE)
