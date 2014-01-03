@@ -11,6 +11,21 @@ const int W = 7;
 const int H = 6;
 
 ////////////////////////////////////////////////////////////////////////
+// pre-calculated scores
+////////////////////////////////////////////////////////////////////////
+
+int S[65536] = { 0 };
+
+const int S_4C = 1000000;
+const int S_L3 = 100000;
+const int S_D3 = 2000;
+const int S_J3 = 1800;
+const int S_L2 = 200;
+const int S_J2 = 180;
+const int S_1 = 20;
+
+
+////////////////////////////////////////////////////////////////////////
 // 盤面
 ////////////////////////////////////////////////////////////////////////
 
@@ -88,169 +103,185 @@ struct Table
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// Compile Time Unroll Pattern Matcher
+// Basic Patterns
+// 四子一線 oooo
+// 活三 _ooo_ o_oo_o
+// 死三 ooo_ _ooo
+// 跳三 o_oo oo_o
+// 活二 oo__ _oo_ __oo
+// 跳二 o_o_ _o_o o__o
+// 活一 o___ _o__ __o_ ___o
 /////////////////////////////////////////////////////////////////////////////
 
-template <int XI, int YI, int D, Color ... COLORS>
-struct Pattern;
-
-template <int XI, int YI, int D, Color Head, Color ... Tail>
-struct Pattern<XI, YI, D, Head, Tail...> {
-    bool static check(const Table& t, const int x, const int y) {
-        return t(x + D * XI, y + D * YI) == Head && Pattern<XI, YI, D + 1, Tail...>::check(t, x, y);
+int has_4(const std::vector<Color>& v)
+{
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+        if (v[i] == WHITE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == WHITE) return 1;
+        if (v[i] == BLACK && v[i + 1] == BLACK && v[i + 2] == BLACK && v[i + 3] == BLACK) return -1;
     }
-};
+    return 0;
+}
 
-template <int XI, int YI, int D>
-struct Pattern<XI, YI, D> {
-    bool static check(const Table& t, const int x, const int y) {
-        return true;
+int has_live3(const std::vector<Color>& v)
+{
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 5; ++i) {
+        if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == WHITE && v[i + 4] == NONE) return 1;
+        if (v[i] == NONE && v[i + 1] == BLACK && v[i + 2] == BLACK && v[i + 3] == BLACK && v[i + 4] == NONE) return -1;
     }
-};
-
-template <int XI, int YI, int D, Color ... COLORS>
-struct SymPattern {
-    bool static check(const Table& t, const int x, const int y) {
-        return Pattern<XI, YI,  D, COLORS...>::check(t, x, y) ||
-               Pattern<-XI, -YI, D, COLORS...>::check(t, x + XI * (static_cast<int>(sizeof...(COLORS)-1)), y + YI * (static_cast<int>(sizeof...(COLORS)) - 1));
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 6; ++i) {
+        if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == WHITE && v[i + 4] == NONE && v[i + 5] == WHITE) return 1;
+        if (v[i] == BLACK && v[i + 1] == NONE && v[i + 2] == BLACK && v[i + 3] == BLACK && v[i + 4] == NONE && v[i + 5] == BLACK) return -1;
     }
-};
+    return 0;
+}
 
-template <Color ... Colors> using HoriPattern = SymPattern<1, 0, 0, Colors...>;
-template <Color ... Colors> using VertPattern = SymPattern<0, 1, 0, Colors...>;
-template <Color ... Colors> using Dia1Pattern = SymPattern<1, 1, 0, Colors...>;
-template <Color ... Colors> using Dia2Pattern = SymPattern<1,-1, 0, Colors...>;
+int has_dead3(const std::vector<Color>& v)
+{
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+        if (v[i] == WHITE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == NONE) return 1;
+        if (v[i] == BLACK && v[i + 1] == BLACK && v[i + 2] == BLACK && v[i + 3] == NONE) return -1;
+        if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == WHITE) return 1;
+        if (v[i] == NONE && v[i + 1] == BLACK && v[i + 2] == BLACK && v[i + 3] == BLACK) return -1;
+    }
+    return 0;
+}
 
-/////////////////////////////////////////////////////////////////////////////
-// horizontal
-/////////////////////////////////////////////////////////////////////////////
+int has_jump3(const std::vector<Color>& v)
+{
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+        if (v[i] == WHITE && v[i + 1] == WHITE && v[i + 2] == NONE && v[i + 3] == WHITE) return 1;
+        if (v[i] == BLACK && v[i + 1] == BLACK && v[i + 2] == NONE && v[i + 3] == BLACK) return -1;
+        if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == WHITE) return 1;
+        if (v[i] == BLACK && v[i + 1] == NONE && v[i + 2] == BLACK && v[i + 3] == BLACK) return -1;
+    }
+    return 0;
+}
 
-using H_WWWW = HoriPattern<WHITE, WHITE, WHITE, WHITE>;
-using H_BBBB = HoriPattern<BLACK, BLACK, BLACK, BLACK>;
-using H_NWWW = HoriPattern< NONE, WHITE, WHITE, WHITE>;
-using H_NBBB = HoriPattern< NONE, BLACK, BLACK, BLACK>;
-using H_BWWW = HoriPattern<BLACK, WHITE, WHITE, WHITE>;
-using H_WBBB = HoriPattern<WHITE, BLACK, BLACK, BLACK>;
-using H_NWW = HoriPattern< NONE, WHITE, WHITE>;
-using H_NBB = HoriPattern< NONE, BLACK, BLACK>;
-using H_BWW = HoriPattern<BLACK, WHITE, WHITE>;
-using H_WBB = HoriPattern<WHITE, BLACK, BLACK>;
-using H_NW = HoriPattern< NONE, WHITE>;
-using H_NB = HoriPattern< NONE, BLACK>;
-using H_BW = HoriPattern<BLACK, WHITE>;
+int has_live2(const std::vector<Color>& v)
+{
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+        if (v[i] == NONE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == WHITE) return 1;
+        if (v[i] == NONE && v[i + 1] == NONE && v[i + 2] == BLACK && v[i + 3] == BLACK) return -1;
+        if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == NONE) return 1;
+        if (v[i] == NONE && v[i + 1] == BLACK && v[i + 2] == BLACK && v[i + 3] == NONE) return -1;
+        if (v[i] == WHITE && v[i + 1] == WHITE && v[i + 2] == NONE && v[i + 3] == NONE) return 1;
+        if (v[i] == BLACK && v[i + 1] == BLACK && v[i + 2] == NONE && v[i + 3] == NONE) return -1;
+    }
+    return 0;
+}
 
-/////////////////////////////////////////////////////////////////////////////
-// vertical
-/////////////////////////////////////////////////////////////////////////////
+int has_jump2(const std::vector<Color>& v)
+{
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+        if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == NONE) return 1;
+        if (v[i] == BLACK && v[i + 1] == NONE && v[i + 2] == BLACK && v[i + 3] == NONE) return -1;
+        if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == NONE && v[i + 3] == WHITE) return 1;
+        if (v[i] == NONE && v[i + 1] == BLACK && v[i + 2] == NONE && v[i + 3] == BLACK) return -1;
+        if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == NONE && v[i + 3] == WHITE) return 1;
+        if (v[i] == BLACK && v[i + 1] == NONE && v[i + 2] == NONE && v[i + 3] == BLACK) return -1;
+    }
+    return 0;
+}
 
-using V_WWWW = VertPattern<WHITE, WHITE, WHITE, WHITE>;
-using V_BBBB = VertPattern<BLACK, BLACK, BLACK, BLACK>;
-using V_NWWW = VertPattern< NONE, WHITE, WHITE, WHITE>;
-using V_NBBB = VertPattern< NONE, BLACK, BLACK, BLACK>;
-using V_BWWW = VertPattern<BLACK, WHITE, WHITE, WHITE>;
-using V_WBBB = VertPattern<WHITE, BLACK, BLACK, BLACK>;
-using V_NWW = VertPattern< NONE, WHITE, WHITE>;
-using V_NBB = VertPattern< NONE, BLACK, BLACK>;
-using V_BWW = VertPattern<BLACK, WHITE, WHITE>;
-using V_WBB = VertPattern<WHITE, BLACK, BLACK>;
-using V_NW = VertPattern< NONE, WHITE>;
-using V_NB = VertPattern< NONE, BLACK>;
-using V_BW = VertPattern<BLACK, WHITE>;
+int has_1(const std::vector<Color>& v)
+{
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+        if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == NONE && v[i + 3] == NONE) return 1;
+        if (v[i] == BLACK && v[i + 1] == NONE && v[i + 2] == NONE && v[i + 3] == NONE) return -1;
+        if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == NONE && v[i + 3] == NONE) return 1;
+        if (v[i] == NONE && v[i + 1] == BLACK && v[i + 2] == NONE && v[i + 3] == NONE) return -1;
+        if (v[i] == NONE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == NONE) return 1;
+        if (v[i] == NONE && v[i + 1] == NONE && v[i + 2] == BLACK && v[i + 3] == NONE) return -1;
+        if (v[i] == NONE && v[i + 1] == NONE && v[i + 2] == NONE && v[i + 3] == WHITE) return 1;
+        if (v[i] == NONE && v[i + 1] == NONE && v[i + 2] == NONE && v[i + 3] == BLACK) return -1;
+    }
+    return 0;
+}
 
-/////////////////////////////////////////////////////////////////////////////
-// Dia1
-/////////////////////////////////////////////////////////////////////////////
+std::vector<Color> int2ColorVec(int n)
+{
+    std::vector<Color> result;
+    for (int i = 0; i < 7; ++i) {
+        result.push_back(static_cast<Color>(n & 0x3));
+        n >>= 2;
+    }
+    return std::move(result);
+}
 
-using D1_WWWW = Dia1Pattern<WHITE, WHITE, WHITE, WHITE>;
-using D1_BBBB = Dia1Pattern<BLACK, BLACK, BLACK, BLACK>;
-using D1_NWWW = Dia1Pattern< NONE, WHITE, WHITE, WHITE>;
-using D1_NBBB = Dia1Pattern< NONE, BLACK, BLACK, BLACK>;
-using D1_BWWW = Dia1Pattern<BLACK, WHITE, WHITE, WHITE>;
-using D1_WBBB = Dia1Pattern<WHITE, BLACK, BLACK, BLACK>;
-using D1_NWW = Dia1Pattern< NONE, WHITE, WHITE>;
-using D1_NBB = Dia1Pattern< NONE, BLACK, BLACK>;
-using D1_BWW = Dia1Pattern<BLACK, WHITE, WHITE>;
-using D1_WBB = Dia1Pattern<WHITE, BLACK, BLACK>;
-using D1_NW = Dia1Pattern< NONE, WHITE>;
-using D1_NB = Dia1Pattern< NONE, BLACK>;
-using D1_BW = Dia1Pattern<BLACK, WHITE>;
+int colors2int(Color c)
+{
+    return c;
+}
 
-/////////////////////////////////////////////////////////////////////////////
-// Dai2
-/////////////////////////////////////////////////////////////////////////////
+template<typename... Rest>
+int colors2int(Color c, Rest... rest)
+{
+    return c | (colors2int(rest...) << 2);
+}
 
-using D2_WWWW = Dia2Pattern<WHITE, WHITE, WHITE, WHITE>;
-using D2_BBBB = Dia2Pattern<BLACK, BLACK, BLACK, BLACK>;
-using D2_NWWW = Dia2Pattern< NONE, WHITE, WHITE, WHITE>;
-using D2_NBBB = Dia2Pattern< NONE, BLACK, BLACK, BLACK>;
-using D2_BWWW = Dia2Pattern<BLACK, WHITE, WHITE, WHITE>;
-using D2_WBBB = Dia2Pattern<WHITE, BLACK, BLACK, BLACK>;
-using D2_NWW = Dia2Pattern< NONE, WHITE, WHITE>;
-using D2_NBB = Dia2Pattern< NONE, BLACK, BLACK>;
-using D2_BWW = Dia2Pattern<BLACK, WHITE, WHITE>;
-using D2_WBB = Dia2Pattern<WHITE, BLACK, BLACK>;
-using D2_NW = Dia2Pattern< NONE, WHITE>;
-using D2_NB = Dia2Pattern< NONE, BLACK>;
-using D2_BW = Dia2Pattern<BLACK, WHITE>;
+void construct_pre_table()
+{
+    for (int i = 0; i < 65536; ++i) {
+        const std::vector<Color> colors = int2ColorVec(i);
+        int s = 0;
+        s = has_4    (colors); if (s == 1) { S[i] = S_4C; continue; } else if (s == -1) { S[i] = -S_4C; continue; }
+        s = has_live3(colors); if (s == 1) { S[i] = S_L3; continue; } else if (s == -1) { S[i] = -S_L3; continue; }
+        s = has_dead3(colors); if (s == 1) { S[i] = S_D3; continue; } else if (s == -1) { S[i] = -S_D3; continue; }
+        s = has_jump3(colors); if (s == 1) { S[i] = S_J3; continue; } else if (s == -1) { S[i] = -S_J3; continue; }
+        s = has_live2(colors); if (s == 1) { S[i] = S_L2; continue; } else if (s == -1) { S[i] = -S_L2; continue; }
+        s = has_jump2(colors); if (s == 1) { S[i] = S_J2; continue; } else if (s == -1) { S[i] = -S_J2; continue; }
+        s = has_1    (colors); if (s == 1) { S[i] = S_1 ; continue; } else if (s == -1) { S[i] = -S_1 ; continue; }
+    }    
+}
 
 /////////////////////////////////////////////////////////////////////////
 // Score Weights
 /////////////////////////////////////////////////////////////////////////
 
-const int S_4C = 1000000;
-const int S_3N =  10000;
-const int S_3B =   2000;
-const int S_2N =   1000;
-const int S_2B =    200;
-const int S_1N =    100;
-const int S_1B =     20;
+template<typename... Colors>
+int eval_line(Colors... args)
+{
+    int i = colors2int(args...);
+    return S[i];
+}
 
 int eval(const Table& t)
 {
     int score = 0;
-    ///////////////////////////////////////////////////////////
-    // win
-    ///////////////////////////////////////////////////////////
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_BBBB::check(t, x, y)) { return -S_4C; } if ( H_WWWW::check(t, x, y)) { return  S_4C; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BBBB::check(t, x, y)) { return -S_4C; } if ( V_WWWW::check(t, x, y)) { return  S_4C; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W - 3; ++x) { if (D1_BBBB::check(t, x, y)) { return -S_4C; } if (D1_WWWW::check(t, x, y)) { return  S_4C; } } }
-    for (int y = 3; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if (D2_BBBB::check(t, x, y)) { return -S_4C; } if (D2_WWWW::check(t, x, y)) { return  S_4C; } } }
+    int ls = 0;
 
-    // WWWN
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_NBBB::check(t, x, y)) { score -= S_3N; } if ( H_NWWW::check(t, x, y)) { score += S_3N; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_NBBB::check(t, x, y)) { score -= S_3N; } if ( V_NWWW::check(t, x, y)) { score += S_3N; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W - 3; ++x) { if (D1_NBBB::check(t, x, y)) { score -= S_3N; } if (D1_NWWW::check(t, x, y)) { score += S_3N; } } }
-    for (int y = 3; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if (D2_NBBB::check(t, x, y)) { score -= S_3N; } if (D2_NWWW::check(t, x, y)) { score += S_3N; } } }
+    // hori
+    ls = eval_line(t(0, 0), t(1, 0), t(2, 0), t(3, 0), t(4, 0), t(5, 0), t(6, 0)); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 1), t(1, 1), t(2, 1), t(3, 1), t(4, 1), t(5, 1), t(6, 1)); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 2), t(1, 2), t(2, 2), t(3, 2), t(4, 2), t(5, 2), t(6, 2)); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 3), t(1, 3), t(2, 3), t(3, 3), t(4, 3), t(5, 3), t(6, 3)); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 4), t(1, 4), t(2, 4), t(3, 4), t(4, 4), t(5, 4), t(6, 4)); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 5), t(1, 5), t(2, 5), t(3, 5), t(4, 5), t(5, 5), t(6, 5)); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
 
-    // WWWB
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if ( H_WBBB::check(t, x, y)) { score -= S_3B; } if ( H_BWWW::check(t, x, y)) { score += S_3B; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_WBBB::check(t, x, y)) { score -= S_3B; } if ( V_BWWW::check(t, x, y)) { score += S_3B; } } }
-    for (int y = 0; y < H - 3; ++y) { for (int x = 0; x < W - 3; ++x) { if (D1_WBBB::check(t, x, y)) { score -= S_3B; } if (D1_BWWW::check(t, x, y)) { score += S_3B; } } }
-    for (int y = 3; y < H    ; ++y) { for (int x = 0; x < W - 3; ++x) { if (D2_WBBB::check(t, x, y)) { score -= S_3B; } if (D2_BWWW::check(t, x, y)) { score += S_3B; } } }
+    // vert
+    ls = eval_line(t(0, 1), t(0, 2), t(0, 3), t(0, 4), t(0, 5), t(0, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(1, 1), t(1, 2), t(1, 3), t(1, 4), t(1, 5), t(1, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(2, 1), t(2, 2), t(2, 3), t(2, 4), t(2, 5), t(2, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(3, 1), t(3, 2), t(3, 3), t(3, 4), t(3, 5), t(3, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(4, 1), t(4, 2), t(4, 3), t(4, 4), t(4, 5), t(4, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(5, 1), t(5, 2), t(5, 3), t(5, 4), t(5, 5), t(5, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(6, 1), t(6, 2), t(6, 3), t(6, 4), t(6, 5), t(6, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
 
-    // WWN
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if ( H_NBB::check(t, x, y)) { score -= S_2N; } if ( H_NWW::check(t, x, y)) { score += S_2N; } } }
-    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_NBB::check(t, x, y)) { score -= S_2N; } if ( V_NWW::check(t, x, y)) { score += S_2N; } } }
-    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W - 2; ++x) { if (D1_NBB::check(t, x, y)) { score -= S_2N; } if (D1_NWW::check(t, x, y)) { score += S_2N; } } }
-    for (int y = 2; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if (D2_NBB::check(t, x, y)) { score -= S_2N; } if (D2_NWW::check(t, x, y)) { score += S_2N; } } }
+    // D1
+    ls = eval_line(t(0, 2), t(1, 3), t(2, 4), t(3, 5), WALL                  ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 1), t(1, 2), t(2, 3), t(3, 4), t(4, 5), WALL         ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 0), t(1, 1), t(2, 2), t(3, 3), t(4, 4), t(5, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(1, 0), t(2, 1), t(3, 2), t(4, 3), t(5, 4), t(6, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(2, 0), t(3, 1), t(4, 2), t(5, 3), t(6, 4), WALL         ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(3, 0), t(4, 1), t(5, 2), t(6, 3), WALL                  ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
 
-    // WWB
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if ( H_WBB::check(t, x, y)) { score -= S_2B; } if ( H_BWW::check(t, x, y)) { score += S_2B; } } }
-    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_WBB::check(t, x, y)) { score -= S_2B; } if ( V_BWW::check(t, x, y)) { score += S_2B; } } }
-    for (int y = 0; y < H - 2; ++y) { for (int x = 0; x < W - 2; ++x) { if (D1_WBB::check(t, x, y)) { score -= S_2B; } if (D1_BWW::check(t, x, y)) { score += S_2B; } } }
-    for (int y = 2; y < H    ; ++y) { for (int x = 0; x < W - 2; ++x) { if (D2_WBB::check(t, x, y)) { score -= S_2B; } if (D2_BWW::check(t, x, y)) { score += S_2B; } } }
-
-    // WN
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if ( H_NB::check(t, x, y)) { score -= S_1N; } if ( H_NW::check(t, x, y)) { score += S_1N; } } }
-    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_NB::check(t, x, y)) { score -= S_1N; } if ( V_NW::check(t, x, y)) { score += S_1N; } } }
-    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W - 1; ++x) { if (D1_NB::check(t, x, y)) { score -= S_1N; } if (D1_NW::check(t, x, y)) { score += S_1N; } } }
-    for (int y = 1; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if (D2_NB::check(t, x, y)) { score -= S_1N; } if (D2_NW::check(t, x, y)) { score += S_1N; } } }
-
-    // WB
-    for (int y = 0; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if ( H_BW::check(t, x, y)) { score -= S_1B; } if ( H_BW::check(t, x, y)) { score += S_1B; } } }
-    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W    ; ++x) { if ( V_BW::check(t, x, y)) { score -= S_1B; } if ( V_BW::check(t, x, y)) { score += S_1B; } } }
-    for (int y = 0; y < H - 1; ++y) { for (int x = 0; x < W - 1; ++x) { if (D1_BW::check(t, x, y)) { score -= S_1B; } if (D1_BW::check(t, x, y)) { score += S_1B; } } }
-    for (int y = 1; y < H    ; ++y) { for (int x = 0; x < W - 1; ++x) { if (D2_BW::check(t, x, y)) { score -= S_1B; } if (D2_BW::check(t, x, y)) { score += S_1B; } } }
+    // D2
+    ls = eval_line(t(0, 3), t(1, 2), t(2, 1), t(3, 0), WALL                  ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 4), t(1, 3), t(2, 2), t(3, 1), t(4, 0), WALL         ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(1, 5), t(2, 4), t(3, 3), t(4, 2), t(5, 1), t(6, 0), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 5), t(1, 4), t(2, 3), t(3, 2), t(4, 1), t(5, 0), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(2, 5), t(3, 4), t(4, 3), t(5, 2), t(6, 1), WALL         ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(3, 5), t(4, 4), t(5, 3), t(6, 2), WALL                  ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
 
     return score;
 }
@@ -337,6 +368,8 @@ int main()
     if (rand() % 2 == 1)
         //t.put(3, WHITE)
         ;
+
+    construct_pre_table();
 
     t.print();
     while (true) {
