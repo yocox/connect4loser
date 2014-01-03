@@ -115,7 +115,7 @@ struct Table
 
 int has_4(const std::vector<Color>& v)
 {
-    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 3; ++i) {
         if (v[i] == WHITE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == WHITE) return 1;
         if (v[i] == BLACK && v[i + 1] == BLACK && v[i + 2] == BLACK && v[i + 3] == BLACK) return -1;
     }
@@ -124,11 +124,11 @@ int has_4(const std::vector<Color>& v)
 
 int has_live3(const std::vector<Color>& v)
 {
-    for (std::vector<Color>::size_type i = 0; i < v.size() - 5; ++i) {
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
         if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == WHITE && v[i + 4] == NONE) return 1;
         if (v[i] == NONE && v[i + 1] == BLACK && v[i + 2] == BLACK && v[i + 3] == BLACK && v[i + 4] == NONE) return -1;
     }
-    for (std::vector<Color>::size_type i = 0; i < v.size() - 6; ++i) {
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 5; ++i) {
         if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == WHITE && v[i + 4] == NONE && v[i + 5] == WHITE) return 1;
         if (v[i] == BLACK && v[i + 1] == NONE && v[i + 2] == BLACK && v[i + 3] == BLACK && v[i + 4] == NONE && v[i + 5] == BLACK) return -1;
     }
@@ -137,7 +137,7 @@ int has_live3(const std::vector<Color>& v)
 
 int has_dead3(const std::vector<Color>& v)
 {
-    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 3; ++i) {
         if (v[i] == WHITE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == NONE) return 1;
         if (v[i] == BLACK && v[i + 1] == BLACK && v[i + 2] == BLACK && v[i + 3] == NONE) return -1;
         if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == WHITE) return 1;
@@ -148,7 +148,7 @@ int has_dead3(const std::vector<Color>& v)
 
 int has_jump3(const std::vector<Color>& v)
 {
-    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 3; ++i) {
         if (v[i] == WHITE && v[i + 1] == WHITE && v[i + 2] == NONE && v[i + 3] == WHITE) return 1;
         if (v[i] == BLACK && v[i + 1] == BLACK && v[i + 2] == NONE && v[i + 3] == BLACK) return -1;
         if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == WHITE) return 1;
@@ -159,7 +159,7 @@ int has_jump3(const std::vector<Color>& v)
 
 int has_live2(const std::vector<Color>& v)
 {
-    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 3; ++i) {
         if (v[i] == NONE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == WHITE) return 1;
         if (v[i] == NONE && v[i + 1] == NONE && v[i + 2] == BLACK && v[i + 3] == BLACK) return -1;
         if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == WHITE && v[i + 3] == NONE) return 1;
@@ -172,7 +172,7 @@ int has_live2(const std::vector<Color>& v)
 
 int has_jump2(const std::vector<Color>& v)
 {
-    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 3; ++i) {
         if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == WHITE && v[i + 3] == NONE) return 1;
         if (v[i] == BLACK && v[i + 1] == NONE && v[i + 2] == BLACK && v[i + 3] == NONE) return -1;
         if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == NONE && v[i + 3] == WHITE) return 1;
@@ -185,7 +185,7 @@ int has_jump2(const std::vector<Color>& v)
 
 int has_1(const std::vector<Color>& v)
 {
-    for (std::vector<Color>::size_type i = 0; i < v.size() - 4; ++i) {
+    for (std::vector<Color>::size_type i = 0; i < v.size() - 3; ++i) {
         if (v[i] == WHITE && v[i + 1] == NONE && v[i + 2] == NONE && v[i + 3] == NONE) return 1;
         if (v[i] == BLACK && v[i + 1] == NONE && v[i + 2] == NONE && v[i + 3] == NONE) return -1;
         if (v[i] == NONE && v[i + 1] == WHITE && v[i + 2] == NONE && v[i + 3] == NONE) return 1;
@@ -259,13 +259,13 @@ int eval(const Table& t)
     ls = eval_line(t(0, 5), t(1, 5), t(2, 5), t(3, 5), t(4, 5), t(5, 5), t(6, 5)); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
 
     // vert
-    ls = eval_line(t(0, 1), t(0, 2), t(0, 3), t(0, 4), t(0, 5), t(0, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
-    ls = eval_line(t(1, 1), t(1, 2), t(1, 3), t(1, 4), t(1, 5), t(1, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
-    ls = eval_line(t(2, 1), t(2, 2), t(2, 3), t(2, 4), t(2, 5), t(2, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
-    ls = eval_line(t(3, 1), t(3, 2), t(3, 3), t(3, 4), t(3, 5), t(3, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
-    ls = eval_line(t(4, 1), t(4, 2), t(4, 3), t(4, 4), t(4, 5), t(4, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
-    ls = eval_line(t(5, 1), t(5, 2), t(5, 3), t(5, 4), t(5, 5), t(5, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
-    ls = eval_line(t(6, 1), t(6, 2), t(6, 3), t(6, 4), t(6, 5), t(6, 6), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(0, 0), t(0, 1), t(0, 2), t(0, 3), t(0, 4), t(0, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(1, 0), t(1, 1), t(1, 2), t(1, 3), t(1, 4), t(1, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(2, 0), t(2, 1), t(2, 2), t(2, 3), t(2, 4), t(2, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(3, 0), t(3, 1), t(3, 2), t(3, 3), t(3, 4), t(3, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(4, 0), t(4, 1), t(4, 2), t(4, 3), t(4, 4), t(4, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(5, 0), t(5, 1), t(5, 2), t(5, 3), t(5, 4), t(5, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(6, 0), t(6, 1), t(6, 2), t(6, 3), t(6, 4), t(6, 5), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
 
     // D1
     ls = eval_line(t(0, 2), t(1, 3), t(2, 4), t(3, 5), WALL                  ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
@@ -278,9 +278,9 @@ int eval(const Table& t)
     // D2
     ls = eval_line(t(0, 3), t(1, 2), t(2, 1), t(3, 0), WALL                  ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
     ls = eval_line(t(0, 4), t(1, 3), t(2, 2), t(3, 1), t(4, 0), WALL         ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
-    ls = eval_line(t(1, 5), t(2, 4), t(3, 3), t(4, 2), t(5, 1), t(6, 0), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
     ls = eval_line(t(0, 5), t(1, 4), t(2, 3), t(3, 2), t(4, 1), t(5, 0), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
-    ls = eval_line(t(2, 5), t(3, 4), t(4, 3), t(5, 2), t(6, 1), WALL         ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(1, 5), t(2, 4), t(3, 3), t(4, 2), t(5, 1), t(6, 0), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
+    ls = eval_line(t(2, 5), t(3, 4), t(4, 3), t(5, 2), t(6, 1), WALL); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
     ls = eval_line(t(3, 5), t(4, 4), t(5, 3), t(6, 2), WALL                  ); if (ls == S_4C) return ls; if (ls == -S_4C) return ls; score += ls;
 
     return score;
@@ -358,20 +358,16 @@ int choose_a_move(Table& t, int level)
 
 int main()
 {
+    construct_pre_table();
+
     int level = 1;
-    std::cout << "level:[0~3] ";
+    std::cout << "level:[0~10] ";
     std::cin >> level;
-    level = level * 2 + 1;
 
     Table t;
     srand((unsigned)std::time(NULL));
-    if (rand() % 2 == 1)
-        //t.put(3, WHITE)
-        ;
-
-    construct_pre_table();
-
     t.print();
+
     while (true) {
         // player
         std::cout << "choose : ";
