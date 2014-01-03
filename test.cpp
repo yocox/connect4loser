@@ -14,28 +14,35 @@ const int H = 6;
 // ½L­±
 ////////////////////////////////////////////////////////////////////////
 
-enum Color { NONE = 0, WHITE = 1, BLACK = 2 };
+enum Color { NONE = 0, WHITE = 1, BLACK = 2, WALL = 3 };
 
 struct Table
 {
     Table() {
-        for (int x = 0; x < W; ++x) {
-            for (int y = 0; y < H; ++y) {
-                v[x][y] = NONE;
-            }
+        for (int y = 0; y < H; ++y) {
+            v[y] = 0;
         }
     }
-    Color v[W][H];
+    int v[H];
+    void clear(const int x, const int y) {
+        v[y] &= (~(0x3 << (x * 2)));
+    }
+    void set(const int x, const int y, Color c) {
+        clear(x, y);
+        v[y] |= (c << (x * 2));}
+    Color get(const int x, const int y) const {
+        return static_cast<Color>((v[y] >> (x * 2)) & 0x3);
+    }
     Color operator()(const int x, const int y) const {
-        return v[x][y];
+        return get(x, y);
     }
     bool putable(const int x) const {
-        return (v[x][H - 1]) == NONE;
+        return (get(x, H - 1)) == NONE;
     }
     void put(const int x, Color c) {
         for (int y = 0; y < H; ++y) {
-            if (v[x][y] == NONE) {
-                v[x][y] = c;
+            if (get(x, y) == NONE) {
+                set(x, y, c);
                 steps.emplace_back(x, y);
                 return;
             }
@@ -46,7 +53,7 @@ struct Table
 
     void pop() {
         const auto& pos = steps.back();
-        v[pos.first][pos.second] = NONE;
+        clear(pos.first, pos.second);
         steps.pop_back();
     }
 
@@ -55,10 +62,10 @@ struct Table
         for (int y = H - 1; y >= 0; --y) {
             std::cout << H - y << "|";
             for (int x = 0; x < W; ++x) {
-                if (v[x][y] == WHITE) {
+                if (get(x, y) == WHITE) {
                     std::cout << "x";
                 }
-                else if (v[x][y] == BLACK) {
+                else if (get(x, y) == BLACK) {
                     std::cout << "o";
                 }
                 else {
