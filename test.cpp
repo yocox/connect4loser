@@ -340,6 +340,86 @@ std::pair<int, int> minmax(Table& t, const int deep, const bool want_max, const 
     }
 }
 
+std::pair<int, int> minmax_random(Table& t, const int deep, const bool want_max, const int known_limit)
+{
+    int s[W];
+    int current_sub_tree_limit = want_max ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
+    for (int i = 0; i < W; ++i)
+    {
+        if (!t.putable(i)) {
+            s[i] = want_max ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
+            continue;
+        }
+
+        t.put(i, want_max ? WHITE : BLACK);
+        int score = eval(t);
+        if (want_max) {
+            if (score == S_4C) { t.pop();  return{ i, S_4C }; }
+        }
+        else {
+            if (score == -S_4C) { t.pop();  return{ i, -S_4C }; }
+        }
+
+        if (deep == 1) {
+            s[i] = score;
+        }
+        else {
+            auto tr = minmax(t, deep - 1, !want_max, current_sub_tree_limit);
+            s[i] = tr.second;
+        }
+        t.pop();
+
+        // alpha-beta
+        if (want_max) {
+            current_sub_tree_limit = std::max(current_sub_tree_limit, s[i]);
+            if (current_sub_tree_limit > known_limit) {
+                //std::cout << "alpha-beta proning " << current_sub_tree_limit << " > " << known_limit << std::endl;
+                return{ i, current_sub_tree_limit };
+            }
+        }
+        else {
+            current_sub_tree_limit = std::min(current_sub_tree_limit, s[i]);
+            if (current_sub_tree_limit < known_limit) {
+                //std::cout << "alpha-beta proning " << current_sub_tree_limit << " < " << known_limit << std::endl;
+                return{ i, current_sub_tree_limit };
+            }
+        }
+    }
+
+    if (want_max) {
+        auto max_i = std::max_element(std::begin(s), std::end(s));
+        int num_of_max_elem = std::count(std::begin(s), std::end(s), *max_i);
+        int count = 0;
+        int selected = rand() % num_of_max_elem;
+        for (int i = 0; i != W; ++i) {
+            if (*max_i == s[i]) {
+                if (selected == count) {
+                    max_i = std::begin(s) + i;
+                    break;
+                }
+                ++count;
+            }
+        }
+        return{ max_i - std::begin(s), *max_i };
+    }
+    else {
+        auto min_i = std::min_element(std::begin(s), std::end(s));
+        int num_of_min_elem = std::count(std::begin(s), std::end(s), *min_i);
+        int count = 0;
+        int selected = rand() % num_of_min_elem;
+        for (int i = 0; i != W; ++i) {
+            if (*min_i == s[i]) {
+                if (selected == count) {
+                    min_i = std::begin(s) + i;
+                    break;
+                }
+                ++count;
+            }
+        }
+        return{ min_i - std::begin(s), *min_i };
+    }
+}
+
 int choose_a_move(Table& t, int level)
 {
     using std::chrono::high_resolution_clock;
@@ -348,7 +428,7 @@ int choose_a_move(Table& t, int level)
 
     std::cout << "thinking... ";
     auto start = high_resolution_clock::now();
-    auto i_score = minmax(t, level, want_max(true), std::numeric_limits<int>::max());
+    auto i_score = minmax_random(t, level, want_max(true), std::numeric_limits<int>::max());
     auto finish = high_resolution_clock::now();
 
     milliseconds total_ms = std::chrono::duration_cast<milliseconds>(finish - start);
@@ -358,6 +438,7 @@ int choose_a_move(Table& t, int level)
 
 int main()
 {
+    srand(time(NULL));
     construct_pre_table();
 
     int level = 1;
